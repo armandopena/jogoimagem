@@ -9,27 +9,17 @@ ELimiteJogo = class(Exception);
 
 TTipoJogoImagem = (JImgSuperior, JImgInferior);
 
-TListImagem = class
-  Quantidade: Integer;
-  List: TList;
-
-  function LimiteJogo: Boolean;
-  procedure AddImagem(var Img:  TImage);
-  constructor Create;
-  destructor Destroy; override;
-end;
 
 TJogoImagens = class(TComponent)
 private
-  FImagensSuperiores: TListImagem;
-  FImagensInferiores: TListImagem;
+  FImagensSuperiores: TList;
+  FImagensInferiores: TList;
 protected
-  function GetTipoJogoList(const TipoJogoImagem: TTipoJogoImagem): TListImagem;
+  function GetTipoJogoList(const TipoJogoImagem: TTipoJogoImagem): TList;
 public
   constructor Create(AOwner: TComponent); override;
   destructor Destroy; override;
 
-  procedure AddImagens(const TipoJogoImagem: TTipoJogoImagem; const Img: array of TImage);
   procedure AddImagem(const TipoJogoImagem: TTipoJogoImagem; var Img:  TImage);
 
   function JogarImagem(const TipoJogoImagem: TTipoJogoImagem; Img: TImage): Boolean;
@@ -41,23 +31,17 @@ implementation
 
 { TJogoImagens }
 
-procedure TJogoImagens.AddImagens(const TipoJogoImagem: TTipoJogoImagem;
-  const Img: array of TImage);
-begin
- //   GetTipoJogoList(TipoJogoImagem).AddImagens(Img);
-end;
-
 procedure TJogoImagens.AddImagem(const TipoJogoImagem: TTipoJogoImagem;
   var Img: TImage);
 begin
-    GetTipoJogoList(TipoJogoImagem).AddImagem(Img);
+    GetTipoJogoList(TipoJogoImagem).Add(Img);
 end;
 
 constructor TJogoImagens.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FImagensSuperiores := TListImagem.Create;
-  FImagensInferiores := TListImagem.Create;
+  FImagensSuperiores := TList.Create;
+  FImagensInferiores := TList.Create;
 end;
 
 destructor TJogoImagens.Destroy;
@@ -68,8 +52,7 @@ begin
 end;
 
 function TJogoImagens.GetTipoJogoList(
-  const TipoJogoImagem: TTipoJogoImagem): TListImagem;
-  var imgList: TListImagem;
+  const TipoJogoImagem: TTipoJogoImagem): TList;
 begin
     if TipoJogoImagem = JImgSuperior  then
       Result := FImagensSuperiores
@@ -79,8 +62,8 @@ end;
 
 function TJogoImagens.JogarImagem(const TipoJogoImagem: TTipoJogoImagem;
   Img: TImage): Boolean;
-  var listImg: TListImagem;
-      listDest: TListImagem;
+  var listImg: TList;
+      listDest: TList;
       var i: Integer;
       imgDest: TImage;
 begin
@@ -95,48 +78,24 @@ begin
        listDest := FImagensSuperiores;
 
 
-    for I := 0 to listDest.List.Count - 1 do
+    for I := 0 to listDest.Count - 1 do
     begin
       imgDest := TImage(listDest.List[I]);
       if imgDest.Picture.Graphic = nil then
       begin
           imgDest.Picture := Img.Picture;
-          Inc(listDest.Quantidade);
           Break;
       end
       else
-        if I = listDest.List.Count - 1 then
+        if I = listDest.Count - 1 then
           raise ELimiteJogo.Create('Imagem não pode ser movida.');
     end;
-    i := listImg.List.IndexOf(Img);
+    i := listImg.IndexOf(Img);
     if i  >= 0 then
       TImage(listImg.List[i]).Picture := nil
     else
       raise EListError.Create('Não foi encontrado a imagem na lista de imagens para mover.');
 end;
 
-{ TListImagem }
-
-procedure TListImagem.AddImagem(var Img: TImage);
-begin
-    List.Add(Img);
-
-end;
-
-constructor TListImagem.Create;
-begin
-    List := TList.Create;
-end;
-
-destructor TListImagem.Destroy;
-begin
-  FreeAndNil(List);
-  inherited;
-end;
-
-function TListImagem.LimiteJogo: Boolean;
-begin
-    Result := Quantidade = List.Count;
-end;
 
 end.
